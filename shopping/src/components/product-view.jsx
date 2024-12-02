@@ -4,10 +4,10 @@ import { Button, message, Select } from 'antd';
 import { useState } from 'react';
 
 export const ProductView = () => {
-    const [disable, setDisable] = useState(false); // default is 'middle'
-    const [selectedColor, setSelectedColor] = useState(null); // default is 'middle'
-    const [selectedPower, setSelectedPower] = useState(null); // default is 'middle'
+    const [selectedColor, setSelectedColor] = useState(null);
+    const [selectedPower, setSelectedPower] = useState(null);
     const [messageApi, contextHolder] = message.useMessage();
+    const [selectedProduct, setSelectedProduct] = useState(null);
 
     const { id } = useParams();
     const { products } = useFetchProducts();
@@ -55,7 +55,6 @@ export const ProductView = () => {
     };
 
     const addToCart = () => {
-        console.log(product);
         let productOption;
         if (uniqueStorageSelect) {
             productOption = product.options.find(option => option.color.includes(selectedColor) && option.storage.includes(selectedPower));
@@ -64,17 +63,20 @@ export const ProductView = () => {
         if (uniquePowerSelect) {
             productOption = product.options.find(option => option.color.includes(selectedColor) && option.power.includes(selectedPower));
         }
-        console.log(productOption);
-
         if (!productOption) {
             messageApi.open({
                 type: 'error',
-                content: 'This is an error message',
+                content: 'This Variant is not available please choose another',
             });
         } else {
+            setSelectedProduct(productOption);
+            const items = JSON.parse(localStorage.getItem('cart')) || [];
+            items? items.push({ color: selectedColor, power: selectedPower, product: product, numbers: 1 }) :
+            items.push([{ color: selectedColor, power: selectedPower, product: product, numbers: 1 }]);
+            localStorage.setItem('cart', JSON.stringify(items));            
             messageApi.open({
                 type: 'success',
-                content: 'This is a happy message',
+                content: 'Successfully added to cart',
             });
         }
     }
@@ -86,7 +88,7 @@ export const ProductView = () => {
 
             <div style={{ display: 'flex' }}>
                 Select Color:
-                <Select disabled={!product.available || disable}
+                <Select disabled={!product.available}
                     onChange={handleColorChange}
                     defaultValue=""
                     style={{
@@ -100,7 +102,7 @@ export const ProductView = () => {
                     <>
                         select Power:
                         <Select onChange={handlePowerChange}
-                            disabled={!product.available || disable}
+                            disabled={!product.available}
                             defaultValue=""
                             style={{
                                 width: 120,
@@ -115,7 +117,7 @@ export const ProductView = () => {
                     <>
                         select Storage:
                         <Select onChange={handlePowerChange}
-                            disabled={!product.available || disable}
+                            disabled={!product.available}
                             defaultValue=""
                             style={{
                                 width: 120,
