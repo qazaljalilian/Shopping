@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import inventory from "./../assets/inventory.json";
+import inventory from "../assets/inventory.json";
+
 const useFetchProducts = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
