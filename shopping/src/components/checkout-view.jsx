@@ -1,27 +1,57 @@
 import React from "react";
-
+import { PlusOutlined, MinusOutlined } from '@ant-design/icons';
+import { Button } from "antd";
 
 
 const CheckOutView = () => {
 
-    const items = JSON.parse(localStorage.getItem('cart')) || [];
+    let items = JSON.parse(localStorage.getItem('cart')) || [];
 
     console.log(items);
+    const changeNumberOfItems = (action, clickedItem) => {
 
+        return () => {
+            const item = items.find(item => item.product.id === clickedItem.product.id && item.color === clickedItem.color && (item.power === clickedItem.power || item.storage === clickedItem.storage));
+            if (item) {
+                if (action === 'plus') item.numbers += 1
+                else item.numbers -= 1;
+                if (item.numbers === 0) {
+                    const index = items.findIndex(item => item.numbers === 0);
+                    items.splice(index, 1);
+                }
+                localStorage.setItem('cart', JSON.stringify(items));
+            }
+        }
+    }
 
     return (
         <>
             {items.length > 0 ? (
                 <div>
                     {items.map((item, index) => (
-                        <div key={index}>  {item.product.name}-{item.color}-{item.power || item.storage} {item.numbers} </div>
-
+                        item.numbers > 0 && (
+                            <div key={index} style={{
+                                display: 'flex', flexFlow: 'row', gap: '10px', margin: '20px', border: '1px solid black', padding: '10px', borderRadius: '5px', fontSize: '20px'
+                            }}>
+                                <div>   {item.product.name}</div>
+                                <div>{item.color}</div>
+                                <div>{item.power || item.storage} </div>
+                                <Button size="small"
+                                    icon={<MinusOutlined style={{ fontSize: '15px' }} />}
+                                    onClick={changeNumberOfItems('minus', item)}>
+                                </Button>
+                                <div> {item.numbers} </div>
+                                <Button size="small"
+                                    icon={<PlusOutlined style={{ fontSize: '15px' }} />}
+                                    onClick={changeNumberOfItems('plus', item)}>
+                                </Button>
+                            </div>
+                        )
                     ))}
                 </div>
             ) : (
                 <p>Your cart is empty</p>
             )}
-
         </>
     );
 };

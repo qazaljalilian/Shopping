@@ -6,13 +6,13 @@ import { useState } from 'react';
 export const ProductView = () => {
     const [selectedColor, setSelectedColor] = useState(null);
     const [selectedPower, setSelectedPower] = useState(null);
+    const [selectedStorage, setSelectedStorage] = useState(null);
     const [messageApi, contextHolder] = message.useMessage();
-    const [selectedProduct, setSelectedProduct] = useState(null);
 
     const { id } = useParams();
     const { products } = useFetchProducts();
     if (!products.length) return null;
-    const product = products.find((product) => product.id == id)
+    const product = products.find((product) => product.id === id)
 
 
 
@@ -24,7 +24,6 @@ export const ProductView = () => {
         }
     }, []);
 
-
     const powerSelect = product.options.reduce((acc, option) => {
         if (Array.isArray(option.power)) {
             return [...acc, ...option.power.map(power => ({ value: power, label: power }))];
@@ -35,6 +34,7 @@ export const ProductView = () => {
     const uniquePowerSelect = powerSelect && powerSelect.filter((option, index, self) =>
         index === self.findIndex((t) => t.value === option.value)
     );
+
     const storageSelect = product.options.reduce((acc, option) => {
         if (Array.isArray(option.storage)) {
             return [...acc, ...option.storage.map(storage => ({ value: storage, label: storage }))];
@@ -45,20 +45,15 @@ export const ProductView = () => {
     const uniqueStorageSelect = storageSelect && storageSelect.filter((option, index, self) =>
         index === self.findIndex((t) => t.value === option.value)
     );
-    const handleColorChange = (value) => {
-        setSelectedColor(value);
 
-
-    };
-    const handlePowerChange = (value) => {
-        setSelectedPower(value);
-    };
+    const handleColorChange = (value) => { setSelectedColor(value); };
+    const handlePowerChange = (value) => { setSelectedPower(value); };
+    const handleStorageChange = (value) => { setSelectedStorage(value); };
 
     const addToCart = () => {
         let productOption;
         if (uniqueStorageSelect) {
-            productOption = product.options.find(option => option.color.includes(selectedColor) && option.storage.includes(selectedPower));
-
+            productOption = product.options.find(option => option.color.includes(selectedColor) && option.storage.includes(selectedStorage));
         }
         if (uniquePowerSelect) {
             productOption = product.options.find(option => option.color.includes(selectedColor) && option.power.includes(selectedPower));
@@ -69,25 +64,24 @@ export const ProductView = () => {
                 content: 'This Variant is not available please choose another',
             });
         } else {
-            setSelectedProduct(productOption);
             const items = JSON.parse(localStorage.getItem('cart')) || [];
-            items? items.push({ color: selectedColor, power: selectedPower, product: product, numbers: 1 }) :
-            items.push([{ color: selectedColor, power: selectedPower, product: product, numbers: 1 }]);
-            localStorage.setItem('cart', JSON.stringify(items));            
+            const alreadyExistingItem = items.findIndex(item => item.product.id === product.id && item.color === selectedColor && (item.power === selectedPower || item.storage === selectedStorage));
+            alreadyExistingItem !== -1 ? items[alreadyExistingItem].numbers += 1 : items.push({ color: selectedColor, power: selectedPower, product: product, storage: selectedStorage, numbers: 1 }); localStorage.setItem('cart', JSON.stringify(items));
             messageApi.open({
                 type: 'success',
                 content: 'Successfully added to cart',
             });
         }
     }
+
     return (
         <>
-            <h1>Product : {product?.name}</h1>
+            <h1 style={{ color: 'red' }}>      {!product.available && <span> This item is Out of stock</span>}</h1>
+            <h2>Product : {product?.name}</h2>
             <h2>{product?.price}</h2>
             <h2>{product?.brand}</h2>
-
             <div style={{ display: 'flex' }}>
-                Select Color:
+                <div style={{ margin: '5px' }}>Select Color:</div>
                 <Select disabled={!product.available}
                     onChange={handleColorChange}
                     defaultValue=""
@@ -100,7 +94,7 @@ export const ProductView = () => {
                 />
                 {powerSelect && (
                     <>
-                        select Power:
+                        <div style={{ margin: '5px' }}>Select Power:</div>
                         <Select onChange={handlePowerChange}
                             disabled={!product.available}
                             defaultValue=""
@@ -115,8 +109,8 @@ export const ProductView = () => {
                 )}
                 {storageSelect && (
                     <>
-                        select Storage:
-                        <Select onChange={handlePowerChange}
+                        <div style={{ margin: '5px' }}> select Storage: </div>
+                        <Select onChange={handleStorageChange}
                             disabled={!product.available}
                             defaultValue=""
                             style={{
@@ -128,11 +122,11 @@ export const ProductView = () => {
                         />
                     </>
                 )}
+                <div style={{ marginLeft: '50px' }}>
+                    <Button variant='solid' disabled={!product.available} onClick={addToCart}>Add to Cart</Button>
+                </div>
             </div>
             {contextHolder}
-
-            <Button variant='solid' disabled={!product.available} style={{ marginTop: '10px' }} onClick={addToCart}>Add to Cart</Button>
-            {!product.available && <span>Out of stock</span>}
         </>
     );
 }
