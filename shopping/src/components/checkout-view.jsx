@@ -1,34 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import { PlusOutlined, MinusOutlined } from '@ant-design/icons';
 import { Button } from "antd";
 
 
 const CheckOutView = () => {
-
     let items = JSON.parse(localStorage.getItem('cart')) || [];
+   const  [cartProducts, setCartProducts] = useState(items);
 
-    console.log(items);
+
     const changeNumberOfItems = (action, clickedItem) => {
-
         return () => {
-            const item = items.find(item => item.product.id === clickedItem.product.id && item.color === clickedItem.color && (item.power === clickedItem.power || item.storage === clickedItem.storage));
+            const item = cartProducts.find(item => item.product.id === clickedItem.product.id && item.color === clickedItem.color && (item.power === clickedItem.power || item.storage === clickedItem.storage));
             if (item) {
                 if (action === 'plus') item.numbers += 1
                 else item.numbers -= 1;
                 if (item.numbers === 0) {
                     const index = items.findIndex(item => item.numbers === 0);
-                    items.splice(index, 1);
+                    cartProducts.splice(index, 1);
                 }
-                localStorage.setItem('cart', JSON.stringify(items));
+                localStorage.setItem('cart', JSON.stringify(cartProducts));
+                setCartProducts(cartProducts);
             }
         }
     }
 
     return (
         <>
-            {items.length > 0 ? (
+            {cartProducts.length > 0 ? (
                 <div>
-                    {items.map((item, index) => (
+                    {cartProducts.map((item, index) => (
                         item.numbers > 0 && (
                             <div key={index} style={{
                                 display: 'flex', flexFlow: 'row', gap: '10px', margin: '20px', border: '1px solid black', padding: '10px', borderRadius: '5px', fontSize: '20px'

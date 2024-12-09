@@ -8,8 +8,6 @@ const style = { background: "#0092ff", padding: "8px 0" };
 const ListView = () => {
   const cols = [];
   const { products, loading } = useFetchProducts();
-  console.log(products, loading);
-
   if (products.length) {
     for (let i = 0; i < products.length; i++) {
       cols.push(

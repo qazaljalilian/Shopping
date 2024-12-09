@@ -12,7 +12,7 @@ export const ProductView = () => {
     const { id } = useParams();
     const { products } = useFetchProducts();
     if (!products.length) return null;
-    const product = products.find((product) => product.id === id)
+    const product = products.find((product) => product.id == id)
 
 
 
